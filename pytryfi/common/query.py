@@ -1,9 +1,9 @@
 from pytryfi.const import *
 from pytryfi.exceptions import *
 import json
-import requests
 import logging
-from sentry_sdk import capture_exception
+import requests
+from typing import Literal
 
 LOGGER = logging.getLogger(__name__)
 
@@ -143,30 +143,19 @@ def mutation(sessionId, qString, qVariables):
         LOGGER.error(f"Error performing query", exc_info=e)
         capture_exception(e)
 
-def query(sessionId, qString):
-    try:
-        jsonObject = None
-        url = getGraphqlURL()
-        params={'query': qString}
-        jsonObject = execute(url, sessionId, params=params).json()
-        return jsonObject
-    except Exception as e:
-        LOGGER.error(f"Error performing query", exc_info=e)
-        capture_exception(e)
+def query(sessionId : requests.Session, qString):
+    jsonObject = None
+    url = getGraphqlURL()
+    params={'query': qString}
+    jsonObject = execute(url, sessionId, params=params).json()
+    return jsonObject
 
-def execute(url, sessionId, method='GET', params=None, cookies=None):
+def execute(url : str, sessionId : requests.Session, method: Literal['GET', 'POST'] = 'GET', params=None, cookies=None):
     response = None
-    try:
-        if method == 'GET':
-            response = sessionId.get(url, params=params)
-        elif method == 'POST':
-            response = sessionId.post(url, json=params)
-        else:
-            raise TryFiError(f"Method Passed was invalid: {method}")
-    except requests.RequestException as e:
-        capture_exception(e)
-        raise requests.RequestException(e)
-    except Exception as e:
-            capture_exception(e)
+    if method == 'GET':
+        response = sessionId.get(url, params=params)
+    elif method == 'POST':
+        response = sessionId.post(url, json=params)
+    else:
+        raise TryFiError(f"Method Passed was invalid: {method}. Only GET and POST are supported")
     return response
-    
