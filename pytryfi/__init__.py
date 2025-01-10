@@ -198,7 +198,4 @@ class PyTryFi(object):
             LOGGER.debug(f"Successfully logged in. UserId: {self._userId}")
         except requests.RequestException as e:
             LOGGER.error(f"Cannot login, error: ({e})")
-            capture_exception(e)
-            raise requests.RequestException(e)
-        except Exception as e:
-            capture_exception(e)
+            raise e
