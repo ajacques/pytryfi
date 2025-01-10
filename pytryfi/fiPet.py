@@ -101,6 +101,22 @@ class FiPet(object):
         except Exception as e:
             capture_exception(e)
 
+    def setConnectedTo(self, connectedToJSON):
+        connectedToString = ""
+        try:
+            typename = connectedToJSON['__typename']
+            if typename == 'ConnectedToUser':
+                connectedToString = connectedToJSON['user']['firstName'] + " " + connectedToJSON['user']['lastName']
+            elif typename == 'ConnectedToCellular':
+                connectedToString = "Cellular Signal Strength - " + str(connectedToJSON['signalStrengthPercent'])
+            elif typename == 'ConnectedToBase':
+                connectedToString = "Base ID - " + connectedToJSON['chargingBase']['id']
+            else:
+                connectedToString = "unknown"
+            return connectedToString
+        except:
+            return "unknown"
+
     # set the Pet's current steps, goals and distance details for daily, weekly and monthly
     def setStats(self, activityJSONDaily, activityJSONWeekly, activityJSONMonthly):
         try:
@@ -389,6 +405,10 @@ class FiPet(object):
     @property
     def areaName(self):
         return self._areaName
+
+    @property
+    def connectedTo(self):
+        return self._connectedTo
     
     @property
     def connectedTo(self):
