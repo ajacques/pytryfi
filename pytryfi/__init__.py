@@ -18,59 +18,52 @@ class PyTryFi(object):
     """base object for TryFi"""
 
     def __init__(self, username=None, password=None):
-        try:
-            sentry = sentry_sdk.init(
-                    SENTRY_URL,
-                    release=PYTRYFI_VERSION,
-                )
-            self._api_host = API_HOST_URL_BASE
-            self._session = requests.Session()
-            self._user_agent = "pyTryFi"
-            self._username = username
-            self._password = password    
-            self.login()
-            #set Headers only after login for use going forward.
-            self.setHeaders()
+        sentry = sentry_sdk.init(
+                SENTRY_URL,
+                release=PYTRYFI_VERSION,
+            )
+        self._api_host = API_HOST_URL_BASE
+        self._session = requests.Session()
+        self._user_agent = f"pyTryFi/{PYTRYFI_VERSION}"
+        self._username = username
+        self._password = password
+        self.login()
+        #set Headers only after login for use going forward.
+        self.setHeaders()
 
-            self._currentUser = FiUser(self._userId)
-            self._currentUser.setUserDetails(self._session)
+        self._currentUser = FiUser(self._userId)
+        self._currentUser.setUserDetails(self._session)
 
-            petListJSON = query.getPetList(self._session)
-            h = 0
-            self._pets = []
-            for house in petListJSON:
-                for pet in petListJSON[h]['household']['pets']:
-                    #If pet doesn't have a collar then ignore it. What good is a pet without a collar!
-                    if pet['device'] != "None":
-                        p = FiPet(pet['id'])
-                        p.setPetDetailsJSON(pet)
-                        #get the current location and set it
-                        pLocJSON = query.getCurrentPetLocation(self._session,p._petId)
-                        p.setCurrentLocation(pLocJSON)
-                        #get the daily, weekly and monthly stats and set
-                        pStatsJSON = query.getCurrentPetStats(self._session,p._petId)
-                        p.setStats(pStatsJSON['dailyStat'],pStatsJSON['weeklyStat'],pStatsJSON['monthlyStat'])
-                        #get the daily, weekly and monthly rest stats and set
-                        pRestStatsJSON = query.getCurrentPetRestStats(self._session,p._petId)
-                        p.setRestStats(pRestStatsJSON['dailyStat'],pRestStatsJSON['weeklyStat'],pRestStatsJSON['monthlyStat'])
-                        LOGGER.debug(f"Adding Pet: {p._name} with Device: {p._device._deviceId}")
-                        self._pets.append(p)
-                    else:
-                        LOGGER.warning(f"Pet {pet['name']} - {pet['id']} has no collar. Ignoring Pet!")
-                h = h + 1
-            
-            self._bases = []
-            baseListJSON = query.getBaseList(self._session)
-            h = 0
-            for house in baseListJSON:
-                for base in baseListJSON[h]['household']['bases']:
-                    b = FiBase(base['baseId'])
-                    b.setBaseDetailsJSON(base)
-                    LOGGER.debug(f"Adding Base: {b._name} Online: {b._online}")
-                    self._bases.append(b)
-                h = h + 1
-        except Exception as e:
-            capture_exception(e)
+        petListJSON = query.getPetList(self._session)
+        self._pets = []
+        for house in petListJSON:
+            for pet in house['household']['pets']:
+                #If pet doesn't have a collar then ignore it. What good is a pet without a collar!
+                if pet['device'] != "None":
+                    p = FiPet(pet['id'])
+                    p.setPetDetailsJSON(pet)
+                    #get the current location and set it
+                    pLocJSON = query.getCurrentPetLocation(self._session,p._petId)
+                    p.setCurrentLocation(pLocJSON)
+                    #get the daily, weekly and monthly stats and set
+                    pStatsJSON = query.getCurrentPetStats(self._session,p._petId)
+                    p.setStats(pStatsJSON['dailyStat'],pStatsJSON['weeklyStat'],pStatsJSON['monthlyStat'])
+                    #get the daily, weekly and monthly rest stats and set
+                    pRestStatsJSON = query.getCurrentPetRestStats(self._session,p._petId)
+                    p.setRestStats(pRestStatsJSON['dailyStat'],pRestStatsJSON['weeklyStat'],pRestStatsJSON['monthlyStat'])
+                    LOGGER.debug(f"Adding Pet: {p._name} with Device: {p._device._deviceId}")
+                    self._pets.append(p)
+                else:
+                    LOGGER.warning(f"Pet {pet['name']} - {pet['id']} has no collar. Ignoring Pet!")
+        
+        self._bases = []
+        baseListJSON = query.getBaseList(self._session)
+        for house in baseListJSON:
+            for base in house['household']['bases']:
+                b = FiBase(base['baseId'])
+                b.setBaseDetailsJSON(base)
+                LOGGER.debug(f"Adding Base: {b._name} Online: {b._online}")
+                self._bases.append(b)
 
     def __str__(self):
         instString = f"Username: {self.username}"
@@ -92,8 +85,9 @@ class PyTryFi(object):
         try:
             petListJSON = query.getPetList(self._session)
             updatedPets = []
+            h = 0
             for house in petListJSON:
-                for pet in house['household']['pets']:
+                for pet in petListJSON[h]['household']['pets']:
                     p = FiPet(pet['id'])
                     p.setPetDetailsJSON(pet)
                     #get the current location and set it
@@ -107,60 +101,53 @@ class PyTryFi(object):
                     p.setRestStats(pRestStatsJSON['dailyStat'],pRestStatsJSON['weeklyStat'],pRestStatsJSON['monthlyStat'])
                     LOGGER.debug(f"Adding Pet: {p._name} with Device: {p._device._deviceId}")
                     updatedPets.append(p)
+                h = h + 1
             self._pets = updatedPets
         except Exception as e:
             capture_exception(e)
 
     def updatePetObject(self, petObj):
-        try:
-            petId = petObj.petId
-            count = 0
-            for p in self.pets:
-                if p.petId == petId:
-                    self._pets.pop(count)
-                    self._pets.append(petObj)
-                    LOGGER.debug(f"Updating Existing Pet: {petId}")
-                    break
-                count = count + 1
-        except Exception as e:
-            capture_exception(e)
+        petId = petObj.petId
+        count = 0
+        for p in self.pets:
+            if p.petId == petId:
+                self._pets.pop(count)
+                self._pets.append(petObj)
+                LOGGER.debug(f"Updating Existing Pet: {petId}")
+                break
+            count = count + 1
 
     # return the pet object based on petId
     def getPet(self, petId):
-        try:
-            for p in self.pets:
-                if petId == p.petId:
-                    return p
-            LOGGER.error(f"Cannot find Pet: {petId}")
-            return None
-        except Exception as e:
-            capture_exception(e)
+        for p in self.pets:
+            if petId == p.petId:
+                return p
+        LOGGER.error(f"Cannot find Pet: {petId}")
+        return None
 
     #refresh base details
     def updateBases(self):
         try:
             updatedBases = []
             baseListJSON = query.getBaseList(self._session)
+            h = 0
             for house in baseListJSON:
-                for base in house['household']['bases']:
+                for base in baseListJSON[h]['household']['bases']:
                     b = FiBase(base['baseId'])
                     b.setBaseDetailsJSON(base)
                     updatedBases.append(b)
+                h = h + 1
             self._bases = updatedBases
         except Exception as e:
-            LOGGER.error("Error fetching bases", exc_info=e)
             capture_exception(e)
 
     # return the pet object based on petId
     def getBase(self, baseId):
-        try:
-            for b in self.bases:
-                if baseId == b.baseId:
-                    return b
-            LOGGER.error(f"Cannot find Base: {baseId}")
-            return None
-        except Exception as e:
-            capture_exception(e)
+        for b in self.bases:
+            if baseId == b.baseId:
+                return b
+        LOGGER.error(f"Cannot find Base: {baseId}")
+        return None
 
     def update(self):
         self.updateBases()
@@ -205,11 +192,7 @@ class PyTryFi(object):
             response = self._session.post(url, data=params)
             response.raise_for_status()
             #validate if the response contains error or not
-            try:
-                error = response.json()['error']
-            except Exception as e:
-                #capture_exception(e)
-                error = None
+            error = response.json()['error']
             #if error set or response is non-200
             if error or not response.ok:
                 errorMsg = error['message']
@@ -225,4 +208,7 @@ class PyTryFi(object):
             LOGGER.debug(f"Successfully logged in. UserId: {self._userId}")
         except requests.RequestException as e:
             LOGGER.error(f"Cannot login, error: ({e})")
-            raise e
+            capture_exception(e)
+            raise requests.RequestException(e)
+        except Exception as e:
+            capture_exception(e)
