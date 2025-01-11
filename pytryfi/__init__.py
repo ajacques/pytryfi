@@ -182,10 +182,10 @@ class PyTryFi(object):
             response = self._session.post(url, data=params)
             response.raise_for_status()
             #validate if the response contains error or not
-            error = response.json()['error']
+            json = response.json()
             #if error set or response is non-200
-            if error or not response.ok:
-                errorMsg = error['message']
+            if 'error' in json or not response.ok:
+                errorMsg = json['error'].get('message', None)
                 LOGGER.error(f"Cannot login, response: ({response.status_code}): {errorMsg} ")
                 capture_exception(errorMsg)
                 raise Exception("TryFiLoginError")
