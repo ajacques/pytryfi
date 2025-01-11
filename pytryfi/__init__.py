@@ -182,11 +182,7 @@ class PyTryFi(object):
             response = self._session.post(url, data=params)
             response.raise_for_status()
             #validate if the response contains error or not
-            try:
-                error = response.json()['error']
-            except Exception as e:
-                #capture_exception(e)
-                error = None
+            error = response.json()['error']
             #if error set or response is non-200
             if error or not response.ok:
                 errorMsg = error['message']
