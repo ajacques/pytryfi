@@ -10,33 +10,29 @@ class FiDevice(object):
         self._deviceId = deviceId
     
     def setDeviceDetailsJSON(self, deviceJSON):
+        self._moduleId = deviceJSON['moduleId']
+        self._buildId = deviceJSON['info']['buildId']
+        self._batteryPercent = int(deviceJSON['info']['batteryPercent'])
+        
+        #V1 of the collar has this parameter but V2 it is missing
         try:
-            self._moduleId = deviceJSON['moduleId']
-            self._buildId = deviceJSON['info']['buildId']
-            self._batteryPercent = int(deviceJSON['info']['batteryPercent'])
-            
-            #V1 of the collar has this parameter but V2 it is missing
-            try:
-                self._isCharging = bool(deviceJSON['info']['isCharging'])
-            except Exception as e1:
-                self._isCharging = False
-            
-            #self._batteryHealth = deviceJSON['info']['batteryHealth']  
-            self._ledOffAt = self.setLedOffAtDate(deviceJSON['operationParams']['ledOffAt'])
-            self._ledOn = self.getAccurateLEDStatus( bool(deviceJSON['operationParams']['ledEnabled']))
-            self._mode = deviceJSON['operationParams']['mode']
-            self._ledColor = deviceJSON['ledColor']['name']
-            self._ledColorHex = deviceJSON['ledColor']['hexCode']
-            self._connectionStateDate = datetime.datetime.fromisoformat(str(deviceJSON['lastConnectionState']['date']).replace('Z', '+00:00'))
-            self._connectionStateType = deviceJSON['lastConnectionState']['__typename']
-            self._availableLedColors = []
-            self._lastUpdated = datetime.datetime.now()
-            for cString in deviceJSON['availableLedColors']:
-                c = ledColors(int(cString['ledColorCode']),cString['hexCode'], cString['name'] )
-                self._availableLedColors.append(c)
-        except Exception as e:
-            LOGGER.debug(f"tryfi Error: {e}")
-            capture_exception(e)
+            self._isCharging = bool(deviceJSON['info']['isCharging'])
+        except Exception as e1:
+            self._isCharging = False
+        
+        #self._batteryHealth = deviceJSON['info']['batteryHealth']  
+        self._ledOffAt = self.setLedOffAtDate(deviceJSON['operationParams']['ledOffAt'])
+        self._ledOn = self.getAccurateLEDStatus( bool(deviceJSON['operationParams']['ledEnabled']))
+        self._mode = deviceJSON['operationParams']['mode']
+        self._ledColor = deviceJSON['ledColor']['name']
+        self._ledColorHex = deviceJSON['ledColor']['hexCode']
+        self._connectionStateDate = datetime.datetime.fromisoformat(str(deviceJSON['lastConnectionState']['date']).replace('Z', '+00:00'))
+        self._connectionStateType = deviceJSON['lastConnectionState']['__typename']
+        self._availableLedColors = []
+        self._lastUpdated = datetime.datetime.now()
+        for cString in deviceJSON['availableLedColors']:
+            c = ledColors(int(cString['ledColorCode']),cString['hexCode'], cString['name'] )
+            self._availableLedColors.append(c)
 
     def __str__(self):
         return f"Last Updated - {self.lastUpdated} - Device ID: {self.deviceId} Device Mode: {self.mode} Battery Left: {self.batteryPercent}% LED State: {self.ledOn} Last Connected: {self.connectionStateDate} by: {self.connectionStateType}"
