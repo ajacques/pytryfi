@@ -32,13 +32,7 @@ class FiPet(object):
             self._dayOfBirth = None
         self._gender = petJSON.get('gender')
         self._weight = float(petJSON['weight']) if 'weight' in petJSON else None
-        try:
-            self._breed = petJSON['breed']['name']
-        except:
-            LOGGER.warning(f"Unknown Breed of Dog")
-            self._breed = None
-            #track last updated
-        self._lastUpdated = datetime.datetime.now()
+        self._breed = petJSON['breed'].get('name') if 'breed' in petJSON else None
         try:
             self._photoLink = petJSON['photos']['first']['image']['fullSize']
         except Exception as e:
@@ -48,6 +42,7 @@ class FiPet(object):
         self._device = FiDevice(petJSON['device']['id'])
         self._device.setDeviceDetailsJSON(petJSON['device'])
         self._connectedTo = self.setConnectedTo(petJSON['device']['lastConnectionState'])
+        self._lastUpdated = datetime.datetime.now()
 
     def __str__(self):
         return f"Last Updated - {self.lastUpdated} - Pet ID: {self.petId} Name: {self.name} Is Lost: {self.isLost} From: {self.homeCityState} ActivityType: {self.activityType} Located: {self.currLatitude},{self.currLongitude} Last Updated: {self.currStartTime}\n \

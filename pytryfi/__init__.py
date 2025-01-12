@@ -170,7 +170,6 @@ class PyTryFi(object):
 
     # login to the api and get a session
     def login(self):
-        error = None
         url = API_HOST_URL_BASE + API_LOGIN
         params={
                 'email' : self._username,

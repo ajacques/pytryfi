@@ -18,7 +18,7 @@ class FiDevice(object):
         try:
             self._isCharging = bool(deviceJSON['info']['isCharging'])
         except Exception as e1:
-            self._isCharging = False
+            self._isCharging = False # TODO: This should be passed back as unknown/unavailable
         
         #self._batteryHealth = deviceJSON['info']['batteryHealth']  
         self._ledOffAt = self.setLedOffAtDate(deviceJSON['operationParams']['ledOffAt'])
