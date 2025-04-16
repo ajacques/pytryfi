@@ -64,19 +64,16 @@ class FiPet(object):
                 self._currLatitude = float(activityJSON['position']['latitude'])
             self._currStartTime = datetime.datetime.fromisoformat(activityJSON['start'].replace('Z', '+00:00'))
 
-            if 'place' in activityJSON:
+            if 'place' in activityJSON and activityJSON['place'] != None:
                 self._currPlaceName = activityJSON['place']['name']
                 self._currPlaceAddress = activityJSON['place']['address']
             else:
                 self._currPlaceName = None
                 self._currPlaceAddress = None
             self._lastUpdated = datetime.datetime.now()
-        except TryFiError as e:
-            capture_exception(e)
+        except Exception as e:
             LOGGER.error(f"Unable to set values Current Location for Pet {self.name}.\nException: {e}\nwhile parsing {activityJSON}")
             raise TryFiError("Unable to set Pet Location Details")
-        except Exception as e:
-            capture_exception(e)
 
     def setConnectedTo(self, connectedToJSON):
         connectedToString = ""
