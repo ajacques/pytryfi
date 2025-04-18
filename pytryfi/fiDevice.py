@@ -8,8 +8,12 @@ LOGGER = logging.getLogger(__name__)
 class FiDevice(object):
     def __init__(self, deviceId):
         self._deviceId = deviceId
+        self._moduleId = None
+        self._buildId = None
+        self._batteryPercent = None
+        self._isCharging = None
     
-    def setDeviceDetailsJSON(self, deviceJSON):
+    def setDeviceDetailsJSON(self, deviceJSON: dict):
         self._moduleId = deviceJSON['moduleId']
         self._buildId = deviceJSON['info']['buildId']
         self._batteryPercent = int(deviceJSON['info']['batteryPercent'])
@@ -19,7 +23,7 @@ class FiDevice(object):
             self._isCharging = bool(deviceJSON['info']['isCharging'])
         except Exception as e1:
             self._isCharging = False # TODO: This should be passed back as unknown/unavailable
-        
+
         #self._batteryHealth = deviceJSON['info']['batteryHealth']  
         self._ledOffAt = self.setLedOffAtDate(deviceJSON['operationParams']['ledOffAt'])
         self._ledOn = self.getAccurateLEDStatus( bool(deviceJSON['operationParams']['ledEnabled']))
@@ -92,7 +96,7 @@ class FiDevice(object):
 
 #This is created because if TryFi automatically turns off the LED, the status is still set to true in the api.
 #This will compare the dates to see if the current date/time is greater than the turnoffat time in the api.
-    def getAccurateLEDStatus(self, ledStatus):
+    def getAccurateLEDStatus(self, ledStatus: bool):
         if ledStatus is False:
             LOGGER.debug("getAccurateLedStatus: LED Status is False")
             return False
