@@ -87,10 +87,10 @@ class PyTryFi(object):
                 capture_exception(e)
             #get the daily, weekly and monthly stats and set
             pStatsJSON = query.getCurrentPetStats(self._session, pet._petId)
-            p.setStats(pStatsJSON['dailyStat'], pStatsJSON['weeklyStat'], pStatsJSON['monthlyStat'])
+            pet.setStats(pStatsJSON['dailyStat'], pStatsJSON['weeklyStat'], pStatsJSON['monthlyStat'])
             #get the daily, weekly and monthly rest stats and set
             pRestStatsJSON = query.getCurrentPetRestStats(self._session,p._petId)
-            p.setRestStats(pRestStatsJSON['dailyStat'], pRestStatsJSON['weeklyStat'], pRestStatsJSON['monthlyStat'])
+            pet.setRestStats(pRestStatsJSON['dailyStat'], pRestStatsJSON['weeklyStat'], pRestStatsJSON['monthlyStat'])
 
     def updatePetObject(self, petObj):
         petId = petObj.petId

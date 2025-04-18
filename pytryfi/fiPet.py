@@ -11,6 +11,17 @@ LOGGER = logging.getLogger(__name__)
 class FiPet(object):
     def __init__(self, petId):
         self._petId = petId
+        self._name = None
+        self._homeCityState = None
+        self._yearOfBirth = None
+        self._monthOfBirth = None
+        self._gender = None
+        self._currPlaceName = None
+        self._currPlaceAddress = None
+        self._device = None
+        self._weight = None
+        self._connectedTo = None
+        self._lastUpdated = None
 
     def setPetDetailsJSON(self, petJSON: dict):
         self._name = petJSON.get('name')
