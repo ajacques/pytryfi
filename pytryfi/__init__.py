@@ -6,7 +6,6 @@ from pytryfi.fiUser import FiUser
 from pytryfi.fiPet import FiPet
 from pytryfi.fiBase import FiBase
 from pytryfi.common import query
-from pytryfi.const import SENTRY_URL
 import sentry_sdk
 from sentry_sdk import capture_message, capture_exception
 
@@ -18,10 +17,6 @@ class PyTryFi(object):
     """base object for TryFi"""
 
     def __init__(self, username=None, password=None):
-        sentry = sentry_sdk.init(
-                SENTRY_URL,
-                release=PYTRYFI_VERSION,
-            )
         self._api_host = API_HOST_URL_BASE
         self._session = requests.Session()
         self._user_agent = f"pyTryFi/{PYTRYFI_VERSION}"
@@ -72,7 +67,7 @@ class PyTryFi(object):
         petString = ""
         for b in self.bases:
             baseString = baseString + f"{b}"
-        for p in self.pets:
+        for p in self._pets:
             petString = petString + f"{p}"
         return f"TryFi Instance - {instString}\n Pets in Home:\n {petString}\n Bases In Home:\n {baseString}"
     
@@ -82,29 +77,25 @@ class PyTryFi(object):
 
     #refresh pet details for all pets
     def updatePets(self):
-        petListJSON = query.getPetList(self._session)
-        updatedPets = []
-        for house in petListJSON:
-            for pet in house['household']['pets']:
-                p = FiPet(pet['id'])
-                p.setPetDetailsJSON(pet)
-                #get the current location and set it
-                pLocJSON = query.getCurrentPetLocation(self._session,p._petId)
-                p.setCurrentLocation(pLocJSON)
-                #get the daily, weekly and monthly stats and set
-                pStatsJSON = query.getCurrentPetStats(self._session,p._petId)
-                p.setStats(pStatsJSON['dailyStat'],pStatsJSON['weeklyStat'],pStatsJSON['monthlyStat'])
-                #get the daily, weekly and monthly rest stats and set
-                pRestStatsJSON = query.getCurrentPetRestStats(self._session,p._petId)
-                p.setRestStats(pRestStatsJSON['dailyStat'],pRestStatsJSON['weeklyStat'],pRestStatsJSON['monthlyStat'])
-                LOGGER.debug(f"Adding Pet: {p._name} with Device: {p._device._deviceId}")
-                updatedPets.append(p)
-        self._pets = updatedPets
+        for pet in self._pets:
+            pet.setPetDetailsJSON(pet)
+            #get the current location and set it
+            try:
+                pLocJSON = query.getCurrentPetLocation(self._session, pet._petId)
+                pet.setCurrentLocation(pLocJSON)
+            except Exception as e:
+                capture_exception(e)
+            #get the daily, weekly and monthly stats and set
+            pStatsJSON = query.getCurrentPetStats(self._session, pet._petId)
+            p.setStats(pStatsJSON['dailyStat'], pStatsJSON['weeklyStat'], pStatsJSON['monthlyStat'])
+            #get the daily, weekly and monthly rest stats and set
+            pRestStatsJSON = query.getCurrentPetRestStats(self._session,p._petId)
+            p.setRestStats(pRestStatsJSON['dailyStat'], pRestStatsJSON['weeklyStat'], pRestStatsJSON['monthlyStat'])
 
     def updatePetObject(self, petObj):
         petId = petObj.petId
         count = 0
-        for p in self.pets:
+        for p in self._pets:
             if p.petId == petId:
                 self._pets.pop(count)
                 self._pets.append(petObj)
@@ -114,7 +105,7 @@ class PyTryFi(object):
 
     # return the pet object based on petId
     def getPet(self, petId):
-        for p in self.pets:
+        for p in self._pets:
             if petId == p.petId:
                 return p
         LOGGER.error(f"Cannot find Pet: {petId}")
@@ -177,24 +168,20 @@ class PyTryFi(object):
             }
         
         LOGGER.debug(f"Logging into TryFi")
-        try:
-            response = self._session.post(url, data=params)
-            response.raise_for_status()
-            #validate if the response contains error or not
-            json = response.json()
-            #if error set or response is non-200
-            if 'error' in json or not response.ok:
-                errorMsg = json['error'].get('message', None)
-                LOGGER.error(f"Cannot login, response: ({response.status_code}): {errorMsg} ")
-                capture_exception(errorMsg)
-                raise Exception("TryFiLoginError")
-            
-            #storing cookies but don't need them. Handled by session mgmt
-            self._cookies = response.cookies
-            #store unique userId from login for future use
-            self._userId = response.json()['userId']
-            self._sessionId = response.json()['sessionId']
-            LOGGER.debug(f"Successfully logged in. UserId: {self._userId}")
-        except requests.RequestException as e:
-            LOGGER.error(f"Cannot login, error: ({e})")
-            raise e
+        response = self._session.post(url, data=params)
+        response.raise_for_status()
+        #validate if the response contains error or not
+        json = response.json()
+        #if error set or response is non-200
+        if 'error' in json or not response.ok:
+            errorMsg = json['error'].get('message', None)
+            LOGGER.error(f"Cannot login, response: ({response.status_code}): {errorMsg} ")
+            capture_exception(errorMsg)
+            raise Exception("TryFiLoginError")
+        
+        #storing cookies but don't need them. Handled by session mgmt
+        self._cookies = response.cookies
+        #store unique userId from login for future use
+        self._userId = response.json()['userId']
+        self._sessionId = response.json()['sessionId']
+        LOGGER.debug(f"Successfully logged in. UserId: {self._userId}")
