@@ -89,7 +89,7 @@ class PyTryFi(object):
             pStatsJSON = query.getCurrentPetStats(self._session, pet._petId)
             pet.setStats(pStatsJSON['dailyStat'], pStatsJSON['weeklyStat'], pStatsJSON['monthlyStat'])
             #get the daily, weekly and monthly rest stats and set
-            pRestStatsJSON = query.getCurrentPetRestStats(self._session,p._petId)
+            pRestStatsJSON = query.getCurrentPetRestStats(self._session, pet._petId)
             pet.setRestStats(pRestStatsJSON['dailyStat'], pRestStatsJSON['weeklyStat'], pRestStatsJSON['monthlyStat'])
 
     def updatePetObject(self, petObj):
