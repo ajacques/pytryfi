@@ -78,7 +78,6 @@ class PyTryFi(object):
     #refresh pet details for all pets
     def updatePets(self):
         for pet in self._pets:
-            pet.setPetDetailsJSON(pet)
             #get the current location and set it
             try:
                 pLocJSON = query.getCurrentPetLocation(self._session, pet._petId)

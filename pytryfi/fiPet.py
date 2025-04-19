@@ -22,6 +22,7 @@ class FiPet(object):
         self._weight = None
         self._connectedTo = None
         self._lastUpdated = None
+        self._connectionSignalStrength = None
 
     def setPetDetailsJSON(self, petJSON: dict):
         self._name = petJSON.get('name')
@@ -88,10 +89,12 @@ class FiPet(object):
     def setConnectedTo(self, connectedToJSON):
         connectedToString = ""
         typename = connectedToJSON['__typename']
+        self._connectionSignalStrength = None
         if typename == 'ConnectedToUser':
             connectedToString = connectedToJSON['user']['firstName'] + " " + connectedToJSON['user']['lastName']
         elif typename == 'ConnectedToCellular':
-            connectedToString = "Cellular Signal Strength - " + str(connectedToJSON['signalStrengthPercent'])
+            connectedToString = "Cellular"
+            self._connectionSignalStrength = connectedToJSON['signalStrengthPercent']
         elif typename == 'ConnectedToBase':
             connectedToString = "Base ID - " + connectedToJSON['chargingBase']['id']
         else:
@@ -367,6 +370,10 @@ class FiPet(object):
     def connectedTo(self):
         return self._connectedTo
     
+    @property
+    def signalStrength(self):
+        return self._connectionSignalStrength
+
     def getCurrPlaceName(self):
         return self.currPlaceName
     
