@@ -116,45 +116,20 @@ class FiPet(object):
 
         self._lastUpdated = datetime.datetime.now()
 
+    def _extractSleep(self, restObject: dict) -> tuple[int, int]:
+        sleep, nap = 0
+        for sleepAmount in restObject['restSummaries'][0]['data']['sleepAmounts']:
+            if sleepAmount['type'] == 'SLEEP':
+                sleep = int(sleepAmount['duration'])
+            if sleepAmount['type'] == "NAP":
+                nap = int(sleepAmount['duration'])
+        return sleep, nap
+
     # set the Pet's current rest details for daily, weekly and monthly
     def setRestStats(self, restJSONDaily, restJSONWeekly, restJSONMonthly):
-        #setting default values to zero in case this feature is not supported by older collars
-        self._dailyNap = 0
-        self._dailySleep = 0
-        self._weeklyNap = 0
-        self._weeklySleep = 0
-        self._monthlyNap = 0
-        self._monthlySleep = 0
-        try:
-            for sleepAmount in restJSONDaily['restSummaries'][0]['data']['sleepAmounts']:
-                if sleepAmount['type'] == 'SLEEP':
-                    self._dailySleep = int(sleepAmount['duration'])
-                if sleepAmount['type'] == "NAP":
-                    self._dailyNap = int(sleepAmount['duration'])
-        except Exception as e:
-            LOGGER.error(f"Unable to set values Daily Rest Stats for Pet {self.name}.\nException: {e}\nwhile parsing {restJSONDaily}")
-            capture_exception(e)
-            raise TryFiError("Unable to set Pet Daily Rest Stats")
-        try:
-            for sleepAmount in restJSONWeekly['restSummaries'][0]['data']['sleepAmounts']:
-                if sleepAmount['type'] == 'SLEEP':
-                    self._weeklySleep = int(sleepAmount['duration'])
-                if sleepAmount['type'] == 'NAP':
-                    self._weeklyNap = int(sleepAmount['duration'])
-        except Exception as e:
-            LOGGER.error(f"Unable to set values Weekly Rest Stats for Pet {self.name}.\nException: {e}\nwhile parsing {restJSONWeekly}")
-            capture_exception(e)
-            raise TryFiError("Unable to set Pet Weekly Rest Stats")
-        try:
-            for sleepAmount in restJSONMonthly['restSummaries'][0]['data']['sleepAmounts']:
-                if sleepAmount['type'] == 'SLEEP':
-                    self._monthlySleep = int(sleepAmount['duration'])
-                if sleepAmount['type'] == 'NAP':
-                    self._monthlyNap = int(sleepAmount['duration'])
-        except Exception as e:
-            LOGGER.error(f"Unable to set values Monthly Rest Stats for Pet {self.name}.\nException: {e}\nwhile parsing {restJSONMonthly}")
-            capture_exception(e)
-            raise TryFiError("Unable to set Pet Monthly Rest Stats")
+        self._dailySleep, self._dailyNap = self._extractSleep(restJSONDaily)
+        self._weeklySleep, self._weeklyNap = self._extractSleep(restJSONWeekly)
+        self._monthlySleep, self._monthlyNap = self._extractSleep(restJSONMonthly)
 
     # Update the Stats of the pet
     def updateStats(self, sessionId):

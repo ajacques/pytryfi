@@ -124,8 +124,14 @@ class PyTryFi(object):
         return None
 
     def update(self):
-        self.updateBases()
+        try:
+            self.updateBases()
+            basefailed = None
+        except Exception as e:
+            basefailed = e
         self.updatePets()
+        if basefailed:
+            LOGGER.warning(f"tryfi update loop. bases={basefailed}, pets=maybe")
 
     @property
     def currentUser(self):
@@ -155,7 +161,7 @@ class PyTryFi(object):
     # login to the api and get a session
     def login(self):
         url = API_HOST_URL_BASE + API_LOGIN
-        params={
+        params = {
                 'email' : self._username,
                 'password' : self._password,
             }
