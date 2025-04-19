@@ -79,17 +79,11 @@ class PyTryFi(object):
     def updatePets(self):
         for pet in self._pets:
             #get the current location and set it
-            try:
-                pLocJSON = query.getCurrentPetLocation(self._session, pet._petId)
-                pet.setCurrentLocation(pLocJSON)
-            except Exception as e:
-                capture_exception(e)
+            pet.updatePetLocation(self._session)
             #get the daily, weekly and monthly stats and set
-            pStatsJSON = query.getCurrentPetStats(self._session, pet._petId)
-            pet.setStats(pStatsJSON['dailyStat'], pStatsJSON['weeklyStat'], pStatsJSON['monthlyStat'])
+            pet.updateStats(self._session)
             #get the daily, weekly and monthly rest stats and set
-            pRestStatsJSON = query.getCurrentPetRestStats(self._session, pet._petId)
-            pet.setRestStats(pRestStatsJSON['dailyStat'], pRestStatsJSON['weeklyStat'], pRestStatsJSON['monthlyStat'])
+            pet.updateRestStats(self._session)
 
     def updatePetObject(self, petObj):
         petId = petObj.petId

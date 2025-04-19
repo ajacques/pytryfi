@@ -170,7 +170,7 @@ class FiPet(object):
     def updateRestStats(self, sessionId):
         try:
             pRestStatsJSON = query.getCurrentPetRestStats(sessionId,self.petId)
-            self.setRestStats(pRestStatsJSON['dailyStat'],pRestStatsJSON['weeklyStat'],pRestStatsJSON['monthlyStat'])
+            self.setRestStats(pRestStatsJSON['dailyStat'], pRestStatsJSON['weeklyStat'], pRestStatsJSON['monthlyStat'])
             return True
         except Exception as e:
             LOGGER.error(f"Could not update rest stats for Pet {self.name}.\n{e}")
