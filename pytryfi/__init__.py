@@ -6,8 +6,7 @@ from pytryfi.fiUser import FiUser
 from pytryfi.fiPet import FiPet
 from pytryfi.fiBase import FiBase
 from pytryfi.common import query
-import sentry_sdk
-from sentry_sdk import capture_message, capture_exception
+from sentry_sdk import capture_exception
 
 
 
@@ -77,13 +76,19 @@ class PyTryFi(object):
 
     #refresh pet details for all pets
     def updatePets(self):
+        failed = 0
         for pet in self._pets:
             #get the current location and set it
-            pet.updatePetLocation(self._session)
+            if not pet.updatePetLocation(self._session):
+                failed += 1
             #get the daily, weekly and monthly stats and set
-            pet.updateStats(self._session)
+            if not pet.updateStats(self._session):
+                failed += 1
             #get the daily, weekly and monthly rest stats and set
-            pet.updateRestStats(self._session)
+            if not pet.updateRestStats(self._session):
+                failed += 1
+        if failed > 0:
+            LOGGER.warning(f"Partial failure {failed}/{len(self._pets) * 3} of updatePets")
 
     def updatePetObject(self, petObj):
         petId = petObj.petId

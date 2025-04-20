@@ -140,6 +140,7 @@ class FiPet(object):
         except Exception as e:
             LOGGER.error(f"Could not update stats for Pet {self.name}.\n{e}")
             capture_exception(e)
+            return False
 
     # Update the Stats of the pet
     def updateRestStats(self, sessionId):
@@ -150,6 +151,7 @@ class FiPet(object):
         except Exception as e:
             LOGGER.error(f"Could not update rest stats for Pet {self.name}.\n{e}")
             capture_exception(e)
+            return False
 
     # Update the Pet's GPS location
     def updatePetLocation(self, sessionId):
