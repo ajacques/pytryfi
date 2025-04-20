@@ -117,7 +117,7 @@ class FiPet(object):
         self._lastUpdated = datetime.datetime.now()
 
     def _extractSleep(self, restObject: dict) -> tuple[int, int]:
-        sleep, nap = 0
+        sleep, nap = 0, 0
         for sleepAmount in restObject['restSummaries'][0]['data']['sleepAmounts']:
             if sleepAmount['type'] == 'SLEEP':
                 sleep = int(sleepAmount['duration'])
