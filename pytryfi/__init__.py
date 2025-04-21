@@ -20,8 +20,7 @@ class PyTryFi(object):
         self._session = requests.Session()
         self._user_agent = f"pyTryFi/{PYTRYFI_VERSION}"
         self._username = username
-        self._password = password
-        self.login()
+        self.login(username, password)
         #set Headers only after login for use going forward.
 
         self._currentUser = FiUser(self._userId)
@@ -164,11 +163,11 @@ class PyTryFi(object):
         return self._session
 
     # login to the api and get a session
-    def login(self):
+    def login(self, username: str, password: str):
         url = API_HOST_URL_BASE + API_LOGIN
         params = {
-                'email' : self._username,
-                'password' : self._password,
+                'email' : username,
+                'password' : password,
             }
         
         LOGGER.debug(f"Logging into TryFi")
