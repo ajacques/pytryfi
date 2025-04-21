@@ -33,7 +33,7 @@ def getBaseList(session: requests.Session):
     LOGGER.debug(f"getBaseList: {response}")
     return response['data']['currentUser']['userHouseholds']
 
-def getCurrentPetLocation(session: requests.Session, petId):
+def getCurrentPetLocation(session: requests.Session, petId: str):
     qString = QUERY_PET_CURRENT_LOCATION.replace(VAR_PET_ID, petId) + FRAGMENT_ONGOING_ACTIVITY_DETAILS \
         + FRAGMENT_UNCERTAINTY_DETAILS + FRAGMENT_CIRCLE_DETAILS + FRAGMENT_LOCATION_POINT \
         + FRAGMENT_PLACE_DETAILS + FRAGMENT_USER_DETAILS + FRAGMENT_POSITION_COORDINATES
@@ -41,39 +41,39 @@ def getCurrentPetLocation(session: requests.Session, petId):
     LOGGER.debug(f"getCurrentPetLocation: {response}")
     return response['data']['pet']['ongoingActivity']
 
-def getCurrentPetStats(session: requests.Session, petId):
+def getCurrentPetStats(session: requests.Session, petId: str):
     qString = QUERY_PET_ACTIVITY.replace(VAR_PET_ID, petId) + FRAGMENT_ACTIVITY_SUMMARY_DETAILS
     response = query(session, qString)
     LOGGER.debug(f"getCurrentPetStats: {response}")
     return response['data']['pet']
 
-def getCurrentPetRestStats(session: requests.Session, petId):
+def getCurrentPetRestStats(session: requests.Session, petId: str):
     qString = QUERY_PET_REST.replace(VAR_PET_ID, petId) + FRAGMENT_REST_SUMMARY_DETAILS
     response = query(session, qString)
     LOGGER.debug(f"getCurrentPetStats: {response}")
     return response['data']['pet']
 
-def getDevicedetails(session: requests.Session, petId):
+def getDevicedetails(session: requests.Session, petId: str):
     qString = QUERY_PET_DEVICE_DETAILS.replace(VAR_PET_ID, petId) + FRAGMENT_PET_PROFILE + FRAGEMENT_BASE_PET_PROFILE + FRAGMENT_DEVICE_DETAILS + FRAGMENT_LED_DETAILS + FRAGMENT_OPERATIONAL_DETAILS + FRAGMENT_CONNECTION_STATE_DETAILS + FRAGMENT_USER_DETAILS + FRAGMENT_BREED_DETAILS + FRAGMENT_PHOTO_DETAILS
     response = query(session, qString)
     LOGGER.debug(f"getDevicedetails: {response}")
     return response['data']['pet']
 
-def setLedColor(session: requests.Session, deviceId, ledColorCode):
+def setLedColor(session: requests.Session, deviceId: str, ledColorCode):
     qString = MUTATION_SET_LED_COLOR + FRAGMENT_DEVICE_DETAILS + FRAGMENT_OPERATIONAL_DETAILS + FRAGMENT_CONNECTION_STATE_DETAILS + FRAGMENT_USER_DETAILS + FRAGMENT_LED_DETAILS
     qVariables = '{"moduleId":"'+deviceId+'","ledColorCode":'+str(ledColorCode)+'}'
     response = mutation(session, qString, qVariables)
     LOGGER.debug(f"setLedColor: {response}")
     return response['data']
 
-def turnOnOffLed(session: requests.Session, moduleId, ledEnabled):
+def turnOnOffLed(session: requests.Session, moduleId, ledEnabled: bool):
     qString = MUTATION_DEVICE_OPS + FRAGMENT_DEVICE_DETAILS + FRAGMENT_OPERATIONAL_DETAILS + FRAGMENT_CONNECTION_STATE_DETAILS + FRAGMENT_USER_DETAILS + FRAGMENT_LED_DETAILS
     qVariables = '{"input": {"moduleId":"'+moduleId+'","ledEnabled":'+str(ledEnabled).lower()+'}}'
     response = mutation(session, qString, qVariables)
     LOGGER.debug(f"turnOnOffLed: {response}")
     return response['data']
 
-def setLostDogMode(session: requests.Session, moduleId, action):
+def setLostDogMode(session: requests.Session, moduleId, action: bool):
     if action:
         mode = PET_MODE_LOST
     else:
