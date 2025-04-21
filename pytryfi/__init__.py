@@ -21,7 +21,6 @@ class PyTryFi(object):
         self._user_agent = f"pyTryFi/{PYTRYFI_VERSION}"
         self._username = username
         self.login(username, password)
-        #set Headers only after login for use going forward.
 
         self._currentUser = FiUser(self._userId)
         self._currentUser.setUserDetails(self._session)
@@ -34,13 +33,8 @@ class PyTryFi(object):
                 if pet['device'] != "None":
                     p = FiPet(pet['id'])
                     p.setPetDetailsJSON(pet)
-                    #get the current location and set it
-                    pLocJSON = query.getCurrentPetLocation(self._session,p._petId)
-                    p.setCurrentLocation(pLocJSON)
-                    #get the daily, weekly and monthly stats and set
-                    pStatsJSON = query.getCurrentPetStats(self._session,p._petId)
-                    p.setStats(pStatsJSON['dailyStat'],pStatsJSON['weeklyStat'],pStatsJSON['monthlyStat'])
-                    #get the daily, weekly and monthly rest stats and set
+                    p.updatePetLocation(self._session)
+                    p.updateStats(self._session) # update steps
                     p.updateRestStats(self._session)
                     LOGGER.debug(f"Adding Pet: {p._name} with Device: {p._device._deviceId}")
                     self._pets.append(p)

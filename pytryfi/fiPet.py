@@ -85,7 +85,7 @@ class FiPet(object):
             self._lastUpdated = datetime.datetime.now()
         except Exception as e:
             LOGGER.error(f"Unable to set values Current Location for Pet {self.name}.\nException: {e}\nwhile parsing {activityJSON}")
-            raise TryFiError("Unable to set Pet Location Details")
+            raise TryFiError("Unable to set Pet Location Details") from e
 
     def setConnectedTo(self, connectedToJSON):
         connectedToString = ""
@@ -117,21 +117,6 @@ class FiPet(object):
 
         self._lastUpdated = datetime.datetime.now()
 
-    def _extractSleep(self, restObject: dict) -> tuple[int, int]:
-        sleep, nap = 0, 0
-        for sleepAmount in restObject['restSummaries'][0]['data']['sleepAmounts']:
-            if sleepAmount['type'] == 'SLEEP':
-                sleep = int(sleepAmount['duration'])
-            if sleepAmount['type'] == "NAP":
-                nap = int(sleepAmount['duration'])
-        return sleep, nap
-
-    # set the Pet's current rest details for daily, weekly and monthly
-    def setRestStats(self, restJSONDaily, restJSONWeekly, restJSONMonthly):
-        self._dailySleep, self._dailyNap = self._extractSleep(restJSONDaily)
-        self._weeklySleep, self._weeklyNap = self._extractSleep(restJSONWeekly)
-        self._monthlySleep, self._monthlyNap = self._extractSleep(restJSONMonthly)
-
     # Update the Stats of the pet
     def updateStats(self, sessionId: requests.Session):
         try:
@@ -143,11 +128,22 @@ class FiPet(object):
             capture_exception(e)
             return False
 
+    def _extractSleep(self, restObject: dict) -> tuple[int, int]:
+        sleep, nap = 0, 0
+        for sleepAmount in restObject['restSummaries'][0]['data']['sleepAmounts']:
+            if sleepAmount['type'] == 'SLEEP':
+                sleep = int(sleepAmount['duration'])
+            if sleepAmount['type'] == "NAP":
+                nap = int(sleepAmount['duration'])
+        return sleep, nap
+
     # Update the Stats of the pet
     def updateRestStats(self, sessionId: requests.Session):
         try:
             pRestStatsJSON = query.getCurrentPetRestStats(sessionId,self.petId)
-            self.setRestStats(pRestStatsJSON['dailyStat'], pRestStatsJSON['weeklyStat'], pRestStatsJSON['monthlyStat'])
+            self._dailySleep, self._dailyNap = self._extractSleep(pRestStatsJSON['dailyStat'])
+            self._weeklySleep, self._weeklyNap = self._extractSleep(pRestStatsJSON['weeklyStat'])
+            self._monthlySleep, self._monthlyNap = self._extractSleep(pRestStatsJSON['monthlyStat'])
             return True
         except Exception as e:
             LOGGER.error(f"Could not update rest stats for Pet {self.name}\n{pRestStatsJSON}.\n{e}", exc_info=True)
