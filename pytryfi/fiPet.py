@@ -1,5 +1,6 @@
 import datetime
 import logging
+import requests
 from pytryfi.common import query
 from pytryfi.const import PET_ACTIVITY_ONGOINGWALK
 from pytryfi.exceptions import *
@@ -132,7 +133,7 @@ class FiPet(object):
         self._monthlySleep, self._monthlyNap = self._extractSleep(restJSONMonthly)
 
     # Update the Stats of the pet
-    def updateStats(self, sessionId):
+    def updateStats(self, sessionId: requests.Session):
         try:
             pStatsJSON = query.getCurrentPetStats(sessionId,self.petId)
             self.setStats(pStatsJSON['dailyStat'],pStatsJSON['weeklyStat'],pStatsJSON['monthlyStat'])
@@ -143,18 +144,18 @@ class FiPet(object):
             return False
 
     # Update the Stats of the pet
-    def updateRestStats(self, sessionId):
+    def updateRestStats(self, sessionId: requests.Session):
         try:
             pRestStatsJSON = query.getCurrentPetRestStats(sessionId,self.petId)
             self.setRestStats(pRestStatsJSON['dailyStat'], pRestStatsJSON['weeklyStat'], pRestStatsJSON['monthlyStat'])
             return True
         except Exception as e:
-            LOGGER.error(f"Could not update rest stats for Pet {self.name}.\n{e}")
+            LOGGER.error(f"Could not update rest stats for Pet {self.name}\n{pRestStatsJSON}.\n{e}", exc_info=True)
             capture_exception(e)
             return False
 
     # Update the Pet's GPS location
-    def updatePetLocation(self, sessionId):
+    def updatePetLocation(self, sessionId: requests.Session):
         try:
             pLocJSON = query.getCurrentPetLocation(sessionId,self.petId)
             self.setCurrentLocation(pLocJSON)
@@ -165,7 +166,7 @@ class FiPet(object):
             return False
     
     # Update the device/collar details for this pet
-    def updateDeviceDetails(self, sessionId):
+    def updateDeviceDetails(self, sessionId: requests.Session):
         try:
             deviceJSON = query.getDevicedetails(sessionId, self.petId)
             self.device.setDeviceDetailsJSON(deviceJSON['device'])
@@ -176,14 +177,14 @@ class FiPet(object):
             return False
 
     # Update all details regarding this pet
-    def updateAllDetails(self, sessionId):
+    def updateAllDetails(self, sessionId: requests.Session):
         self.updateDeviceDetails(sessionId)
         self.updatePetLocation(sessionId)
         self.updateStats(sessionId)
         self.updateRestStats(sessionId)
 
     # set the color code of the led light on the pet collar
-    def setLedColorCode(self, sessionId, colorCode):
+    def setLedColorCode(self, sessionId: requests.Session, colorCode):
         try:
             moduleId = self.device.moduleId
             ledColorCode = int(colorCode)
