@@ -23,7 +23,6 @@ class PyTryFi(object):
         self._password = password
         self.login()
         #set Headers only after login for use going forward.
-        self.setHeaders()
 
         self._currentUser = FiUser(self._userId)
         self._currentUser.setUserDetails(self._session)
@@ -77,6 +76,7 @@ class PyTryFi(object):
     #refresh pet details for all pets
     def updatePets(self):
         failed = 0
+        LOGGER.info(f"Updating {len(self._pets)}")
         for pet in self._pets:
             #get the current location and set it
             if not pet.updatePetLocation(self._session):
@@ -189,3 +189,5 @@ class PyTryFi(object):
         self._userId = response.json()['userId']
         self._sessionId = response.json()['sessionId']
         LOGGER.debug(f"Successfully logged in. UserId: {self._userId}")
+
+        self.setHeaders()
