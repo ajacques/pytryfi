@@ -67,20 +67,9 @@ class PyTryFi(object):
 
     #refresh pet details for all pets
     def updatePets(self):
-        failed = 0
         LOGGER.info(f"Updating {len(self._pets)}")
         for pet in self._pets:
-            #get the current location and set it
-            if not pet.updatePetLocation(self._session):
-                failed += 1
-            #get the daily, weekly and monthly stats and set
-            if not pet.updateStats(self._session):
-                failed += 1
-            #get the daily, weekly and monthly rest stats and set
-            if not pet.updateRestStats(self._session):
-                failed += 1
-        if failed > 0:
-            LOGGER.warning(f"Partial failure {failed}/{len(self._pets) * 3} of updatePets")
+            pet.updateAllDetails(self._session)
 
     def updatePetObject(self, petObj):
         petId = petObj.petId

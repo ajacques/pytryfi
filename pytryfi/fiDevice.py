@@ -1,7 +1,7 @@
 import logging
 import datetime
 from pytryfi.ledColors import ledColors
-from pytryfi.const import PET_MODE_NORMAL, PET_MODE_LOST
+from pytryfi.const import PET_MODE_LOST
 
 LOGGER = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ class FiDevice(object):
         return f"Last Updated - {self.lastUpdated} - Device ID: {self.deviceId} Device Mode: {self.mode} Battery Left: {self.batteryPercent}% LED State: {self.ledOn} Last Connected: {self.connectionStateDate} by: {self.connectionStateType}"
 
     @property
-    def deviceId(self):
+    def deviceId(self) -> str:
         return self._deviceId
     @property
     def moduleId(self):
@@ -85,17 +85,17 @@ class FiDevice(object):
     def availableLedColors(self):
         return self._availableLedColors
     @property
-    def lastUpdated(self):
+    def lastUpdated(self) -> datetime.datetime:
         return self._lastUpdated
     @property
-    def isLost(self):
+    def isLost(self) -> bool:
         if self._mode == PET_MODE_LOST:
             return True
         else:
             return False
 
-#This is created because if TryFi automatically turns off the LED, the status is still set to true in the api.
-#This will compare the dates to see if the current date/time is greater than the turnoffat time in the api.
+    #This is created because if TryFi automatically turns off the LED, the status is still set to true in the api.
+    #This will compare the dates to see if the current date/time is greater than the turnoffat time in the api.
     def getAccurateLEDStatus(self, ledStatus: bool):
         if ledStatus is False:
             LOGGER.debug("getAccurateLedStatus: LED Status is False")
