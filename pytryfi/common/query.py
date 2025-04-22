@@ -1,9 +1,9 @@
 from pytryfi.const import *
 from pytryfi.exceptions import *
+from typing import Literal
 import json
 import logging
 import requests
-from typing import Literal
 
 LOGGER = logging.getLogger(__name__)
 

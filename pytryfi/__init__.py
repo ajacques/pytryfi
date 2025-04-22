@@ -132,6 +132,7 @@ class PyTryFi(object):
             self.updateBases()
             basefailed = None
         except Exception as e:
+            LOGGER.warning("failed to update base", e, exc_info=True)
             basefailed = e
         self.updatePets()
         if basefailed:
