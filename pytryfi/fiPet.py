@@ -341,10 +341,6 @@ class FiPet(object):
         return self._connectedTo
     
     @property
-    def connectedTo(self):
-        return self._connectedTo
-    
-    @property
     def signalStrength(self):
         return self._connectionSignalStrength
 
