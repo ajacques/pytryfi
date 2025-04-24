@@ -55,6 +55,7 @@ class FiPet(object):
         self._device = FiDevice(petJSON['device']['id'])
         self._device.setDeviceDetailsJSON(petJSON['device'])
         self._connectedTo = self.setConnectedTo(petJSON['device']['lastConnectionState'])
+        LOGGER.info(f"Connected to: {self._connectedTo}")
         self._lastUpdated = datetime.datetime.now()
 
     def __str__(self):
