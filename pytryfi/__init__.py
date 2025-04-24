@@ -52,7 +52,6 @@ class PyTryFi(object):
 
     def __str__(self):
         instString = f"Username: {self.username}"
-        userString = f"{self.currentUser}"
         baseString = ""
         petString = ""
         for b in self.bases:
@@ -67,7 +66,6 @@ class PyTryFi(object):
 
     #refresh pet details for all pets
     def updatePets(self):
-        LOGGER.info(f"Updating {len(self._pets)}")
         for pet in self._pets:
             pet.updateAllDetails(self._session)
 
@@ -114,7 +112,7 @@ class PyTryFi(object):
             self.updateBases()
             basefailed = None
         except Exception as e:
-            LOGGER.warning("failed to update base", e, exc_info=True)
+            LOGGER.warning("failed to update base: %s", e, exc_info=True)
             basefailed = e
         self.updatePets()
         if basefailed:
