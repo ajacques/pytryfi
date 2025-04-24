@@ -19,10 +19,10 @@ class FiDevice(object):
         self._batteryPercent = int(deviceJSON['info']['batteryPercent'])
         
         #V1 of the collar has this parameter but V2 it is missing
-        try:
+        if 'isCharging' in deviceJSON['info']:
             self._isCharging = bool(deviceJSON['info']['isCharging'])
-        except Exception as e1:
-            self._isCharging = False # TODO: This should be passed back as unknown/unavailable
+        else:
+            self._isCharging = None
 
         #self._batteryHealth = deviceJSON['info']['batteryHealth']  
         self._ledOffAt = self.setLedOffAtDate(deviceJSON['operationParams']['ledOffAt'])
@@ -70,7 +70,7 @@ class FiDevice(object):
     def ledOffAt(self):
         return self._ledOffAt
     @property
-    def ledColor(self):
+    def ledColor(self) -> ledColors:
         return self._ledColor
     @property
     def ledColorHex(self):
@@ -82,7 +82,7 @@ class FiDevice(object):
     def connectionStateType(self):
         return self._connectionStateType
     @property
-    def availableLedColors(self):
+    def availableLedColors(self) -> list[ledColors]:
         return self._availableLedColors
     @property
     def lastUpdated(self) -> datetime.datetime:
