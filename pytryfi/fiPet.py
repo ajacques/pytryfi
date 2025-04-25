@@ -159,15 +159,12 @@ class FiPet(object):
     # Update all details regarding this pet
     def updateAllDetails(self, sessionId: requests.Session):
         petJson = query.getPetAllInfo(sessionId, self.petId)
-        print("Hello")
         self.device.setDeviceDetailsJSON(petJson['device'])
         self.setCurrentLocation(petJson['ongoingActivity'])
         self.setStats(petJson['dailyStepStat'], petJson['weeklyStepStat'], petJson['monthlyStepStat'])
-        # TODO: Support weekly/monthly
+        # TODO: Support weekly
         self._dailySleep, self._dailyNap = self._extractSleep(petJson['dailySleepStat'])
         self._monthlySleep, self._monthlyNap = self._extractSleep(petJson['monthlySleepStat'])
-        #self.updateStats(sessionId)
-        #self.updateRestStats(sessionId)
 
     # set the color code of the led light on the pet collar
     def setLedColorCode(self, sessionId: requests.Session, colorCode):
