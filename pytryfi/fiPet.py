@@ -21,9 +21,7 @@ class FiPet(object):
         self._currPlaceAddress = None
         self._device = None
         self._weight = None
-        self._connectedTo = None
         self._lastUpdated = None
-        self._connectionSignalStrength = None
 
     def setPetDetailsJSON(self, petJSON: dict):
         self._name = petJSON.get('name')
@@ -54,8 +52,6 @@ class FiPet(object):
             self._photoLink = ""
         self._device = FiDevice(petJSON['device']['id'])
         self._device.setDeviceDetailsJSON(petJSON['device'])
-        self._connectedTo = self.setConnectedTo(petJSON['device']['lastConnectionState'])
-        LOGGER.info(f"Connected to: {self._connectedTo}")
         self._lastUpdated = datetime.datetime.now()
 
     def __str__(self):
@@ -88,33 +84,20 @@ class FiPet(object):
             LOGGER.error(f"Unable to set values Current Location for Pet {self.name}.\nException: {e}\nwhile parsing {activityJSON}")
             raise TryFiError("Unable to set Pet Location Details") from e
 
-    def setConnectedTo(self, connectedToJSON):
-        connectedToString = ""
-        typename = connectedToJSON['__typename']
-        self._connectionSignalStrength = None
-        if typename == 'ConnectedToUser':
-            connectedToString = connectedToJSON['user']['firstName'] + " " + connectedToJSON['user']['lastName']
-        elif typename == 'ConnectedToCellular':
-            connectedToString = "Cellular"
-            self._connectionSignalStrength = connectedToJSON['signalStrengthPercent']
-        elif typename == 'ConnectedToBase':
-            connectedToString = "Base ID - " + connectedToJSON['chargingBase']['id']
-        else:
-            connectedToString = None
-        return connectedToString
-
     # set the Pet's current steps, goals and distance details for daily, weekly and monthly
     def setStats(self, activityJSONDaily, activityJSONWeekly, activityJSONMonthly):
             #distance is in metres
         self._dailyGoal = int(activityJSONDaily['stepGoal'])
         self._dailySteps = int(activityJSONDaily['totalSteps'])
         self._dailyTotalDistance = float(activityJSONDaily['totalDistance'])
-        self._weeklyGoal = int(activityJSONWeekly['stepGoal'])
-        self._weeklySteps = int(activityJSONWeekly['totalSteps'])
-        self._weeklyTotalDistance = float(activityJSONWeekly['totalDistance'])
-        self._monthlyGoal = int(activityJSONMonthly['stepGoal'])
-        self._monthlySteps = int(activityJSONMonthly['totalSteps'])
-        self._monthlyTotalDistance = float(activityJSONMonthly['totalDistance'])
+        if activityJSONWeekly:
+            self._weeklyGoal = int(activityJSONWeekly['stepGoal'])
+            self._weeklySteps = int(activityJSONWeekly['totalSteps'])
+            self._weeklyTotalDistance = float(activityJSONWeekly['totalDistance'])
+        if activityJSONMonthly:
+            self._monthlyGoal = int(activityJSONMonthly['stepGoal'])
+            self._monthlySteps = int(activityJSONMonthly['totalSteps'])
+            self._monthlyTotalDistance = float(activityJSONMonthly['totalDistance'])
 
         self._lastUpdated = datetime.datetime.now()
 
@@ -175,10 +158,16 @@ class FiPet(object):
 
     # Update all details regarding this pet
     def updateAllDetails(self, sessionId: requests.Session):
-        self.updateDeviceDetails(sessionId)
-        self.updatePetLocation(sessionId)
-        self.updateStats(sessionId)
-        self.updateRestStats(sessionId)
+        petJson = query.getPetAllInfo(sessionId, self.petId)
+        print("Hello")
+        self.device.setDeviceDetailsJSON(petJson['device'])
+        self.setCurrentLocation(petJson['ongoingActivity'])
+        self.setStats(petJson['dailyStepStat'], petJson['weeklyStepStat'], petJson['monthlyStepStat'])
+        # TODO: Support weekly/monthly
+        self._dailySleep, self._dailyNap = self._extractSleep(petJson['dailySleepStat'])
+        self._monthlySleep, self._monthlyNap = self._extractSleep(petJson['monthlySleepStat'])
+        #self.updateStats(sessionId)
+        #self.updateRestStats(sessionId)
 
     # set the color code of the led light on the pet collar
     def setLedColorCode(self, sessionId: requests.Session, colorCode):
@@ -336,10 +325,6 @@ class FiPet(object):
     @property
     def areaName(self):
         return self._areaName
-
-    @property
-    def connectedTo(self):
-        return self._connectedTo
     
     @property
     def signalStrength(self):

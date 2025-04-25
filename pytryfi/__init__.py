@@ -25,9 +25,10 @@ class PyTryFi(object):
         self._currentUser = FiUser(self._userId)
         self._currentUser.setUserDetails(self._session)
 
-        petListJSON = query.getPetList(self._session)
+        houses = query.getHouseHolds(self._session)
         self._pets = []
-        for house in petListJSON:
+        self._bases = []
+        for house in houses:
             for pet in house['household']['pets']:
                 #If pet doesn't have a collar then ignore it. What good is a pet without a collar!
                 if pet['device'] != "None":
@@ -40,10 +41,7 @@ class PyTryFi(object):
                     self._pets.append(p)
                 else:
                     LOGGER.warning(f"Pet {pet['name']} - {pet['id']} has no collar. Ignoring Pet!")
-        
-        self._bases = []
-        baseListJSON = query.getBaseList(self._session)
-        for house in baseListJSON:
+
             for base in house['household']['bases']:
                 b = FiBase(base['baseId'])
                 b.setBaseDetailsJSON(base)

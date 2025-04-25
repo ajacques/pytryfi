@@ -13,33 +13,37 @@ def getUserDetail(session: requests.Session):
     LOGGER.debug(f"getUserDetails: {response}")
     return response['data']['currentUser']
 
-def getPetList(session: requests.Session):
+def getHouseHolds(session: requests.Session):
     qString = QUERY_CURRENT_USER_FULL_DETAIL + FRAGMENT_USER_DETAILS \
         + FRAGMENT_USER_FULL_DETAILS + FRAGMENT_PET_PROFILE + FRAGEMENT_BASE_PET_PROFILE \
         + FRAGMENT_BASE_DETAILS + FRAGMENT_POSITION_COORDINATES + FRAGMENT_BREED_DETAILS \
         + FRAGMENT_PHOTO_DETAILS + FRAGMENT_DEVICE_DETAILS + FRAGMENT_LED_DETAILS + FRAGMENT_OPERATIONAL_DETAILS \
         + FRAGMENT_CONNECTION_STATE_DETAILS
     response = query(session, qString)
-    LOGGER.debug(f"getPetList: {response}")
+    LOGGER.debug(f"getHouseHolds: {response}")
     return response['data']['currentUser']['userHouseholds']
 
+# Simplified version of the above, but gets just details about the bases
 def getBaseList(session: requests.Session):
-    qString = QUERY_CURRENT_USER_FULL_DETAIL + FRAGMENT_USER_DETAILS \
-        + FRAGMENT_USER_FULL_DETAILS + FRAGMENT_PET_PROFILE + FRAGEMENT_BASE_PET_PROFILE \
-        + FRAGMENT_BASE_DETAILS + FRAGMENT_POSITION_COORDINATES + FRAGMENT_BREED_DETAILS \
-        + FRAGMENT_PHOTO_DETAILS + FRAGMENT_DEVICE_DETAILS + FRAGMENT_LED_DETAILS + FRAGMENT_OPERATIONAL_DETAILS \
-        + FRAGMENT_CONNECTION_STATE_DETAILS
+    qString = QUERY_GET_BASES + FRAGMENT_BASE_DETAILS + FRAGMENT_POSITION_COORDINATES
     response = query(session, qString)
     LOGGER.debug(f"getBaseList: {response}")
     return response['data']['currentUser']['userHouseholds']
 
 def getCurrentPetLocation(session: requests.Session, petId: str):
     qString = QUERY_PET_CURRENT_LOCATION.replace(VAR_PET_ID, petId) + FRAGMENT_ONGOING_ACTIVITY_DETAILS \
-        + FRAGMENT_UNCERTAINTY_DETAILS + FRAGMENT_CIRCLE_DETAILS + FRAGMENT_LOCATION_POINT \
+        + FRAGMENT_LOCATION_POINT \
         + FRAGMENT_PLACE_DETAILS + FRAGMENT_USER_DETAILS + FRAGMENT_POSITION_COORDINATES
     response = query(session, qString)
     LOGGER.debug(f"getCurrentPetLocation: {response}")
     return response['data']['pet']['ongoingActivity']
+
+def getPetAllInfo(session: requests.Session, petId: str):
+    qString = QUERY_PET_ACTIVE_DETAILS.replace(VAR_PET_ID, petId) + FRAGMENT_ACTIVITY_SUMMARY_DETAILS + FRAGMENT_ONGOING_ACTIVITY_DETAILS + FRAGMENT_OPERATIONAL_DETAILS + FRAGMENT_CONNECTION_STATE_DETAILS + FRAGMENT_LED_DETAILS \
+        + FRAGMENT_REST_SUMMARY_DETAILS
+    response = query(session, qString)
+    LOGGER.debug(f"getPetAllInfo: {response}")
+    return response['data']['pet']
 
 def getCurrentPetStats(session: requests.Session, petId: str):
     qString = QUERY_PET_ACTIVITY.replace(VAR_PET_ID, petId) + FRAGMENT_ACTIVITY_SUMMARY_DETAILS
@@ -54,7 +58,9 @@ def getCurrentPetRestStats(session: requests.Session, petId: str):
     return response['data']['pet']
 
 def getDevicedetails(session: requests.Session, petId: str):
-    qString = QUERY_PET_DEVICE_DETAILS.replace(VAR_PET_ID, petId) + FRAGMENT_PET_PROFILE + FRAGEMENT_BASE_PET_PROFILE + FRAGMENT_DEVICE_DETAILS + FRAGMENT_LED_DETAILS + FRAGMENT_OPERATIONAL_DETAILS + FRAGMENT_CONNECTION_STATE_DETAILS + FRAGMENT_USER_DETAILS + FRAGMENT_BREED_DETAILS + FRAGMENT_PHOTO_DETAILS
+    qString = QUERY_PET_DEVICE_DETAILS.replace(VAR_PET_ID, petId) + FRAGMENT_PET_PROFILE + FRAGEMENT_BASE_PET_PROFILE + \
+        FRAGMENT_DEVICE_DETAILS + FRAGMENT_LED_DETAILS + FRAGMENT_OPERATIONAL_DETAILS + FRAGMENT_CONNECTION_STATE_DETAILS + \
+        FRAGMENT_USER_DETAILS + FRAGMENT_BREED_DETAILS + FRAGMENT_PHOTO_DETAILS
     response = query(session, qString)
     LOGGER.debug(f"getDevicedetails: {response}")
     return response['data']['pet']

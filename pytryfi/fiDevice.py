@@ -12,6 +12,8 @@ class FiDevice(object):
         self._buildId = None
         self._batteryPercent = None
         self._isCharging = None
+        self._connectedTo = None
+        self._connectionSignalStrength = None
     
     def setDeviceDetailsJSON(self, deviceJSON: dict):
         self._moduleId = deviceJSON['moduleId']
@@ -32,6 +34,7 @@ class FiDevice(object):
         self._ledColorHex = deviceJSON['ledColor']['hexCode']
         self._connectionStateDate = datetime.datetime.fromisoformat(str(deviceJSON['lastConnectionState']['date']).replace('Z', '+00:00'))
         self._connectionStateType = deviceJSON['lastConnectionState']['__typename']
+        self._connectedTo = self.setConnectedTo(deviceJSON['lastConnectionState'])
         self._availableLedColors = []
         self._lastUpdated = datetime.datetime.now()
         for cString in deviceJSON['availableLedColors']:
@@ -40,6 +43,21 @@ class FiDevice(object):
 
     def __str__(self):
         return f"Last Updated - {self.lastUpdated} - Device ID: {self.deviceId} Device Mode: {self.mode} Battery Left: {self.batteryPercent}% LED State: {self.ledOn} Last Connected: {self.connectionStateDate} by: {self.connectionStateType}"
+
+    def setConnectedTo(self, connectedToJSON):
+        connectedToString = ""
+        typename = connectedToJSON['__typename']
+        self._connectionSignalStrength = None
+        if typename == 'ConnectedToUser':
+            connectedToString = connectedToJSON['user']['firstName'] + " " + connectedToJSON['user']['lastName']
+        elif typename == 'ConnectedToCellular':
+            connectedToString = "Cellular"
+            self._connectionSignalStrength = connectedToJSON['signalStrengthPercent']
+        elif typename == 'ConnectedToBase':
+            connectedToString = "Base ID - " + connectedToJSON['chargingBase']['id']
+        else:
+            connectedToString = None
+        return connectedToString
 
     @property
     def deviceId(self) -> str:
@@ -81,6 +99,9 @@ class FiDevice(object):
     @property
     def connectionStateType(self):
         return self._connectionStateType
+    @property
+    def connectedTo(self):
+        return self._connectedTo
     @property
     def availableLedColors(self) -> list[ledColors]:
         return self._availableLedColors
