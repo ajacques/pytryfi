@@ -12,8 +12,10 @@ class FiDevice(object):
         self._buildId = None
         self._batteryPercent = None
         self._isCharging = None
+        self._availableLedColors = []
         self._connectedTo = None
         self._connectionSignalStrength = None
+        self._temperature = None
     
     def setDeviceDetailsJSON(self, deviceJSON: dict):
         self._moduleId = deviceJSON['moduleId']
@@ -35,8 +37,9 @@ class FiDevice(object):
         self._connectionStateDate = datetime.datetime.fromisoformat(str(deviceJSON['lastConnectionState']['date']).replace('Z', '+00:00'))
         self._connectionStateType = deviceJSON['lastConnectionState']['__typename']
         self._connectedTo = self.setConnectedTo(deviceJSON['lastConnectionState'])
-        self._availableLedColors = []
         self._lastUpdated = datetime.datetime.now()
+        if 'temperature' in deviceJSON['info']:
+            self._temperature = float(deviceJSON['info']['temperature']) / 100 # celcius
         if 'availableLedColors' in deviceJSON:
             for cString in deviceJSON['availableLedColors']:
                 c = ledColors(int(cString['ledColorCode']),cString['hexCode'], cString['name'] )
@@ -75,6 +78,9 @@ class FiDevice(object):
     @property
     def batteryPercent(self):
         return self._batteryPercent
+    @property
+    def temperature(self):
+        return self._temperature
     #This was deprecated in the newer collars
     #@property
     #def batteryHealth(self):
