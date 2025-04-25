@@ -67,17 +67,6 @@ class PyTryFi(object):
         for pet in self._pets:
             pet.updateAllDetails(self._session)
 
-    def updatePetObject(self, petObj):
-        petId = petObj.petId
-        count = 0
-        for p in self._pets:
-            if p.petId == petId:
-                self._pets.pop(count)
-                self._pets.append(petObj)
-                LOGGER.debug(f"Updating Existing Pet: {petId}")
-                break
-            count = count + 1
-
     # return the pet object based on petId
     def getPet(self, petId):
         for p in self._pets:

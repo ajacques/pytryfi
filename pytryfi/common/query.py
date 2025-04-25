@@ -33,14 +33,14 @@ def getBaseList(session: requests.Session):
 def getCurrentPetLocation(session: requests.Session, petId: str):
     qString = QUERY_PET_CURRENT_LOCATION.replace(VAR_PET_ID, petId) + FRAGMENT_ONGOING_ACTIVITY_DETAILS \
         + FRAGMENT_LOCATION_POINT \
-        + FRAGMENT_PLACE_DETAILS + FRAGMENT_USER_DETAILS + FRAGMENT_POSITION_COORDINATES
+        + FRAGMENT_PLACE_DETAILS + FRAGMENT_POSITION_COORDINATES
     response = query(session, qString)
     LOGGER.debug(f"getCurrentPetLocation: {response}")
     return response['data']['pet']['ongoingActivity']
 
 def getPetAllInfo(session: requests.Session, petId: str):
     qString = QUERY_PET_ACTIVE_DETAILS.replace(VAR_PET_ID, petId) + FRAGMENT_ACTIVITY_SUMMARY_DETAILS + FRAGMENT_ONGOING_ACTIVITY_DETAILS + FRAGMENT_OPERATIONAL_DETAILS + FRAGMENT_CONNECTION_STATE_DETAILS + FRAGMENT_LED_DETAILS \
-        + FRAGMENT_REST_SUMMARY_DETAILS
+        + FRAGMENT_REST_SUMMARY_DETAILS + FRAGMENT_POSITION_COORDINATES + FRAGMENT_LOCATION_POINT + FRAGMENT_USER_DETAILS + FRAGMENT_PLACE_DETAILS
     response = query(session, qString)
     LOGGER.debug(f"getPetAllInfo: {response}")
     return response['data']['pet']
@@ -102,7 +102,11 @@ def mutation(session: requests.Session, qString, qVariables):
 def query(session: requests.Session, qString):
     url = getGraphqlURL()
     params={'query': qString}
-    return execute(url, session, params=params).json()
+    resp = execute(url, session, params=params)
+    if not resp.ok:
+        LOGGER.warning(f"non-okay response: {resp.json()}")
+        resp.raise_for_status()
+    return resp.json()
 
 def execute(url : str, session : requests.Session, method: Literal['GET', 'POST'] = 'GET', params=None, cookies=None):
     if method == 'GET':

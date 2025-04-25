@@ -37,9 +37,10 @@ class FiDevice(object):
         self._connectedTo = self.setConnectedTo(deviceJSON['lastConnectionState'])
         self._availableLedColors = []
         self._lastUpdated = datetime.datetime.now()
-        for cString in deviceJSON['availableLedColors']:
-            c = ledColors(int(cString['ledColorCode']),cString['hexCode'], cString['name'] )
-            self._availableLedColors.append(c)
+        if 'availableLedColors' in deviceJSON:
+            for cString in deviceJSON['availableLedColors']:
+                c = ledColors(int(cString['ledColorCode']),cString['hexCode'], cString['name'] )
+                self._availableLedColors.append(c)
 
     def __str__(self):
         return f"Last Updated - {self.lastUpdated} - Device ID: {self.deviceId} Device Mode: {self.mode} Battery Left: {self.batteryPercent}% LED State: {self.ledOn} Last Connected: {self.connectionStateDate} by: {self.connectionStateType}"
